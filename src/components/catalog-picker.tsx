@@ -83,9 +83,9 @@ export function CatalogPicker({
             )}
           </div>
           <p className="help-text">
-            Initial catalog: 3′ Next GEM, GEM-X, and related components. All fields remain editable.
-            Complete kits contain components with different storage temperatures; use their
-            individual labels.
+            Catalog: 3′ and 5′ gene expression, ATAC, Multiome, and related components. All fields
+            remain editable. Complete kits contain components with different storage temperatures;
+            use their individual labels.
           </p>
         </>
       )}
