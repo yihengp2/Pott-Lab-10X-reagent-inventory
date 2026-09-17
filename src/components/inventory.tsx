@@ -1,3 +1,4 @@
+import { CatalogPicker } from './catalog-picker';
 import { useState, useEffect, useRef, type ReactNode } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
@@ -468,6 +469,7 @@ export function ItemForm() {
           }
         }}
       >
+        {!existing && !duplicate && <CatalogPicker item={item} onChange={setItem} />}
         {limited && (
           <div className="warning">
             Members can update quantities, location, and status. Ask an administrator to edit
