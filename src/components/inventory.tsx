@@ -293,7 +293,7 @@ export function Inventory() {
                   </td>
                   <td>
                     {i.freezer}
-                    <small>{[i.shelf, i.box, i.position].filter(Boolean).join(' · ')}</small>
+                    <small>{i.position}</small>
                   </td>
                   <td>
                     <Badge status={i.status} />
@@ -373,8 +373,6 @@ const sectionFields: [string, [keyof InventoryItem, string, string?][]][] = [
     [
       ['storageTemperature', 'Storage temperature'],
       ['freezer', 'Freezer'],
-      ['shelf', 'Shelf'],
-      ['box', 'Box'],
       ['position', 'Position'],
     ],
   ],
@@ -430,7 +428,7 @@ export function ItemForm() {
     'storageTemperature',
     'status',
   ];
-  const required = ['itemName', 'workflow', 'ownerLab', 'freezer', 'shelf', 'box', 'status'];
+  const required = ['itemName', 'workflow', 'ownerLab', 'freezer', 'status'];
   const lists: Record<string, string[]> = {
     workflow: settings.workflows,
     ownerLab: settings.ownerLabs,
@@ -482,7 +480,7 @@ export function ItemForm() {
               <span>{String(index + 1).padStart(2, '0')}</span>
               <div>
                 <h2>{title}</h2>
-                {title === 'Location' && <p>Freezer, shelf, and box are required.</p>}
+                {title === 'Location' && <p>Freezer is required. Position is optional.</p>}
               </div>
             </div>
             <div className="form-grid">

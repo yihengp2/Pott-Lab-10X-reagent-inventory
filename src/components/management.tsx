@@ -1,15 +1,5 @@
 import { useState, useEffect } from 'react';
-import {
-  Snowflake,
-  MapPin,
-  Box,
-  ChevronRight,
-  Upload,
-  Download,
-  FileSpreadsheet,
-  Save,
-  Users,
-} from 'lucide-react';
+import { Snowflake, Upload, Download, FileSpreadsheet, Save, Users } from 'lucide-react';
 import { useInventory } from './state';
 import { PageHeader, Empty } from './layout';
 import { ItemMini } from './inventory';
@@ -18,89 +8,29 @@ import { repository, supabase } from '../data/repository';
 import type { AppSettings, InventoryItem, User } from '../model';
 export function FreezerMap() {
   const { items } = useInventory();
-  const [freezer, setFreezer] = useState('');
-  const [selected, setSelected] = useState<string | null>(null);
-  const freezers = [...new Set(items.map((i) => i.freezer))].sort();
-  const selectedItems = selected
-    ? items.filter((i) => JSON.stringify([i.freezer, i.shelf, i.box]) === selected)
-    : [];
+  const [selected, setSelected] = useState('');
+  const freezers = [...new Set(items.map((item) => item.freezer))].sort();
+  const selectedItems = items.filter((item) => item.freezer === selected);
   return (
     <>
       <PageHeader
         title="Freezer Map"
         eyebrow="EVERYTHING IN ITS PLACE"
-        description="Find a freezer, open a shelf, and see exactly what’s inside each box."
-        action={
-          <select
-            aria-label="Filter by freezer"
-            value={freezer}
-            onChange={(e) => {
-              setFreezer(e.target.value);
-              setSelected(null);
-            }}
-          >
-            <option value="">All freezers</option>
-            {freezers.map((f) => (
-              <option key={f}>{f}</option>
-            ))}
-          </select>
-        }
+        description="Choose a freezer to see its inventory and positions."
       />
       <div className="freezer-layout">
         <div className="freezer-tree">
-          {freezers
-            .filter((f) => !freezer || f === freezer)
-            .map((f) => (
-              <section className="panel" key={f}>
-                <div className="panel-heading">
-                  <h2>
-                    <Snowflake size={20} />
-                    {f}
-                  </h2>
-                  <span className="muted">{items.filter((i) => i.freezer === f).length} items</span>
-                </div>
-                {[...new Set(items.filter((i) => i.freezer === f).map((i) => i.shelf))]
-                  .sort()
-                  .map((s) => (
-                    <details key={s} open>
-                      <summary>
-                        <MapPin size={15} />
-                        {s}
-                      </summary>
-                      <div className="box-grid">
-                        {[
-                          ...new Set(
-                            items.filter((i) => i.freezer === f && i.shelf === s).map((i) => i.box),
-                          ),
-                        ]
-                          .sort()
-                          .map((b) => {
-                            const key = JSON.stringify([f, s, b]);
-                            return (
-                              <button
-                                key={b}
-                                className={selected === key ? 'box-card selected' : 'box-card'}
-                                onClick={() => setSelected(key)}
-                              >
-                                <Box size={21} />
-                                <strong>{b}</strong>
-                                <small>
-                                  {
-                                    items.filter(
-                                      (i) => i.freezer === f && i.shelf === s && i.box === b,
-                                    ).length
-                                  }{' '}
-                                  items
-                                </small>
-                                <ChevronRight size={15} />
-                              </button>
-                            );
-                          })}
-                      </div>
-                    </details>
-                  ))}
-              </section>
-            ))}
+          {freezers.map((freezer) => (
+            <button
+              key={freezer}
+              className={selected === freezer ? 'box-card selected' : 'box-card'}
+              onClick={() => setSelected(freezer)}
+            >
+              <Snowflake size={21} />
+              <strong>{freezer}</strong>
+              <small>{items.filter((item) => item.freezer === freezer).length} items</small>
+            </button>
+          ))}
           {!freezers.length && (
             <Empty
               title="No freezer locations yet"
@@ -111,28 +41,21 @@ export function FreezerMap() {
         <section className="panel box-contents">
           <div className="panel-heading">
             <div>
-              <h2>{selected ? JSON.parse(selected)[2] : 'Box contents'}</h2>
-              <p>
-                {selected
-                  ? JSON.parse(selected).slice(0, 2).join(' · ')
-                  : 'Select a box to explore its inventory.'}
-              </p>
+              <h2>{selected || 'Freezer contents'}</h2>
+              <p>Select a freezer to explore its inventory.</p>
             </div>
           </div>
           {selected ? (
             selectedItems
               .sort((a, b) => a.position.localeCompare(b.position))
-              .map((i) => (
-                <div key={i.id} className="position-row">
-                  <span className="position-tag">{i.position || '—'}</span>
-                  <ItemMini item={i} />
+              .map((item) => (
+                <div key={item.id} className="position-row">
+                  <span className="position-tag">{item.position || '—'}</span>
+                  <ItemMini item={item} />
                 </div>
               ))
           ) : (
-            <Empty
-              title="A place for every reagent"
-              description="Choose a box from a freezer on the left."
-            />
+            <Empty title="A place for every reagent" description="Choose a freezer on the left." />
           )}
         </section>
       </div>
@@ -295,9 +218,7 @@ export function ImportExport() {
                     <td>{i.workflow}</td>
                     <td>{i.ownerLab}</td>
                     <td>{i.remainingReactions}</td>
-                    <td>
-                      {i.freezer} / {i.shelf} / {i.box}
-                    </td>
+                    <td>{[i.freezer, i.position].filter(Boolean).join(' / ')}</td>
                   </tr>
                 ))}
               </tbody>
@@ -428,19 +349,17 @@ export function SettingsPage() {
             </div>
           </div>
           <div className="form-grid">
-            {(['workflows', 'ownerLabs', 'projects', 'freezers', 'shelves', 'boxes'] as const).map(
-              (key) => (
-                <label key={key}>
-                  {key.replace(/([A-Z])/g, ' $1')}
-                  <textarea
-                    rows={6}
-                    disabled={!admin}
-                    value={draft[key].join('\n')}
-                    onChange={(e) => setDraft({ ...draft, [key]: e.target.value.split('\n') })}
-                  />
-                </label>
-              ),
-            )}
+            {(['workflows', 'ownerLabs', 'projects', 'freezers'] as const).map((key) => (
+              <label key={key}>
+                {key.replace(/([A-Z])/g, ' $1')}
+                <textarea
+                  rows={6}
+                  disabled={!admin}
+                  value={draft[key].join('\n')}
+                  onChange={(e) => setDraft({ ...draft, [key]: e.target.value.split('\n') })}
+                />
+              </label>
+            ))}
           </div>
         </section>
         {admin && (

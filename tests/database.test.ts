@@ -33,6 +33,7 @@ beforeAll(async () => {
   );
   await db.exec(readFileSync('supabase/migrations/001_inventory.sql', 'utf8'));
   await db.exec(readFileSync('supabase/migrations/002_settings_validation.sql', 'utf8'));
+  await db.exec(readFileSync('supabase/migrations/003_simplify_location.sql', 'utf8'));
   for (const [id, email] of [
     [admin, 'admin@lab.test'],
     [member, 'member@lab.test'],
@@ -51,6 +52,11 @@ afterAll(async () => {
   await db.close();
 });
 describe('PostgreSQL migration and authorization', () => {
+  it('accepts freezer-only location through the database', async () => {
+    await asUser(member);
+    const saved = await mutate({ ...fixture(), shelf: '', box: '' });
+    expect(saved.freezer).toBeTruthy();
+  });
   it('creates users as Viewers', async () => {
     await asUser(viewer);
     const p = await db.query<{ role: string }>('select role from public.profiles');

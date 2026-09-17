@@ -1,4 +1,4 @@
-import {itemUrl} from '../lib/urls';
+import { itemUrl } from '../lib/urls';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
@@ -202,12 +202,12 @@ export function ActionModal({
         )}
         {mode === 'move' && (
           <div className="form-grid">
-            {(['freezer', 'shelf', 'box', 'position', 'storageTemperature'] as const).map((key) => (
+            {(['freezer', 'position', 'storageTemperature'] as const).map((key) => (
               <label key={key}>
                 {key.replace(/([A-Z])/g, ' $1')}
                 <input
                   value={moved[key]}
-                  required={['freezer', 'shelf', 'box'].includes(key)}
+                  required={key === 'freezer'}
                   onChange={(e) => setMoved({ ...moved, [key]: e.target.value })}
                 />
               </label>
@@ -290,8 +290,6 @@ export function Detail() {
     ['Received', shortDate(item.receivedDate)],
     ['Storage temperature', item.storageTemperature],
     ['Freezer', item.freezer],
-    ['Shelf', item.shelf],
-    ['Box', item.box],
     ['Position', item.position],
     ['Source kit', item.sourceKit],
     ['Last updated', new Date(item.updatedAt).toLocaleString()],
@@ -406,11 +404,7 @@ export function Detail() {
               </div>
             </section>
             <section className="panel qr-panel">
-              <QRCodeSVG
-                value={itemUrl(item.id)}
-                size={130}
-                marginSize={2}
-              />
+              <QRCodeSVG value={itemUrl(item.id)} size={130} marginSize={2} />
               <h3>Find this item instantly</h3>
               <p>Scan the QR code at the freezer.</p>
               <small>{item.id}</small>
@@ -504,7 +498,7 @@ export function QuickUse() {
                 <span>
                   <strong>{i.itemName}</strong>
                   <small>
-                    {i.lotNumber || i.workflow} · {i.box}
+                    {i.lotNumber || i.workflow} · {i.position}
                   </small>
                 </span>
                 <span className="quick-count">

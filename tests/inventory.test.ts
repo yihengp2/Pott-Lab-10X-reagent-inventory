@@ -133,13 +133,14 @@ describe('Business logic', () => {
     expect(isOtherLab({ ...fixture(), ownerLab: ' pott lab ' }, DEFAULT_SETTINGS)).toBe(false);
   });
   it('searches notes, projects and full location', () => {
-    const item = { ...fixture(), notes: 'Use with adapter', project: 'Atlas' };
-    for (const q of ['adapter', 'atlas', 'box a', 'TEST KIT'])
+    const item = { ...fixture(), notes: 'Use with adapter', project: 'Atlas', position: 'A1' };
+    for (const q of ['adapter', 'atlas', 'a1', 'TEST KIT'])
       expect(matchesSearch(item, q)).toBe(true);
     expect(matchesSearch(item, 'missing')).toBe(false);
   });
   it('validates quantities, dates and required location', () => {
-    expect(() => validateItem({ ...fixture(), box: '' })).toThrow();
+    expect(() => validateItem({ ...fixture(), shelf: '', box: '' })).not.toThrow();
+    expect(() => validateItem({ ...fixture(), freezer: '' })).toThrow();
     expect(() => validateItem({ ...fixture(), expirationDate: '2026-02-30' })).toThrow();
     expect(() => validateItem({ ...fixture(), remainingReactions: 17 })).toThrow();
   });

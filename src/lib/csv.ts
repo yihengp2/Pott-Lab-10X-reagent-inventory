@@ -3,7 +3,7 @@ import { blankItem, STATUSES, ITEM_TYPES, type AppSettings, type InventoryItem }
 import { validateItem } from './business';
 export const CSV_FIELDS = Object.keys(
   blankItem({ defaultFreezer: '', labName: '' } as AppSettings),
-) as (keyof InventoryItem)[];
+).filter((field) => !['shelf', 'box'].includes(field)) as (keyof InventoryItem)[];
 export function exportCsv(items: InventoryItem[]) {
   return '\ufeff' + Papa.unparse(items, { columns: CSV_FIELDS, escapeFormulae: true });
 }
@@ -18,7 +18,7 @@ export function parseCsv(text: string, settings: AppSettings) {
   });
   const errors = parsed.errors.map((e) => `Row ${(e.row ?? 0) + 2}: ${e.message}`);
   const fields = parsed.meta.fields || [];
-  for (const field of ['itemName', 'workflow', 'status', 'ownerLab', 'freezer', 'shelf', 'box'])
+  for (const field of ['itemName', 'workflow', 'status', 'ownerLab', 'freezer'])
     if (!fields.includes(field)) errors.push(`Missing column: ${field}`);
   const items: InventoryItem[] = [];
   parsed.data.forEach((row, index) => {

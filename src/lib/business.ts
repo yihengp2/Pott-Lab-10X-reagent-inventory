@@ -39,13 +39,13 @@ export function isOtherLab(item: InventoryItem, settings: AppSettings) {
   );
 }
 export const location = (item: InventoryItem) =>
-  [item.freezer, item.shelf, item.box, item.position].filter(Boolean).join(' / ');
+  [item.freezer, item.position].filter(Boolean).join(' / ');
 export const isKit = (item: InventoryItem) =>
   item.itemType === 'Complete Kit' || item.itemType === 'Partial Kit';
 export function validateItem(item: InventoryItem) {
   if (!STATUSES.includes(item.status)) throw new Error('Invalid status.');
   if (!ITEM_TYPES.includes(item.itemType)) throw new Error('Invalid item type.');
-  for (const key of ['itemName', 'workflow', 'ownerLab', 'freezer', 'shelf', 'box'] as const)
+  for (const key of ['itemName', 'workflow', 'ownerLab', 'freezer'] as const)
     if (!item[key].trim()) throw new Error(`${key.replace(/([A-Z])/g, ' $1')} is required.`);
   for (const key of ['originalReactions', 'remainingReactions', 'quantity'] as const)
     if (!Number.isFinite(item[key]) || item[key] < 0 || item[key] > 1000000000)

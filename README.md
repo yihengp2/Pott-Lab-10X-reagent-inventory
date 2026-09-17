@@ -45,14 +45,14 @@ Leave **both** Supabase environment variables empty. No account, network service
 | Inventory       | Full-text search; eight filters; sortable data columns; add item; filtered CSV export                  |
 | Item details    | Reactions, ownership, location, dates, provenance, notes, QR code, printable label, audit history      |
 | Quick Use       | Mobile search or QR URL lookup, item selection, prominent use button, confirmation, updated count      |
-| Freezer Map     | Freezer → shelf → box → position hierarchy; freezer filter; box contents                               |
+| Freezer Map     | Freezer inventory with optional positions                               |
 | Activity        | Global change history, search, action filters, before/after differences                                |
 | Import / Export | CSV template, file validation and preview, atomic import, all-inventory export                         |
 | Settings        | Default lab/freezer, stock threshold, expiration window, custom options, Supabase user-role management |
 
 ### Inventory rules
 
-- Required: item name, workflow, status, owner lab, freezer, shelf, and box. Position is optional.
+- Required: item name, workflow, status, owner lab, freezer. Position is optional.
 - Reaction counts are whole numbers. Quantity may be fractional. Values cannot be negative, and remaining reactions cannot exceed original reactions.
 - Using reactions never silently changes the chosen status. Reaching zero suggests **DEPLETED** and disables further use.
 - Restocking adds reactions; the original capacity is increased when necessary to accommodate the new count. A previously DEPLETED status remains visible until explicitly changed.
@@ -100,7 +100,7 @@ The Supabase adapter fetches records in batches to avoid PostgREST's default 1,0
 ## Supabase configuration
 
 1. Create a Supabase project dedicated to this laboratory workspace.
-2. Run `supabase/migrations/001_inventory.sql`, then `002_settings_validation.sql`, in the SQL editor or through your migration process. Run each migration once.
+2. Run `supabase/migrations/001_inventory.sql`, then `002_settings_validation.sql` and `003_simplify_location.sql`, in the SQL editor or through your migration process. Run each migration once.
 3. In Authentication, enable email/password sign-in. Create laboratory accounts with passwords in Supabase's user administration tools. Public sign-up is not exposed in this application; disable public sign-ups for an invite-only lab.
 4. Set the Authentication Site URL and allowed redirect URLs to the deployment origin (and your development URL when needed).
 5. Copy `.env.example` to `.env.local` and set:
@@ -154,7 +154,7 @@ Only a trusted database administrator should restore records. A restore can clea
 
 The CSV template lists all application fields. Imports create new IDs and server/browser-controlled creation and update metadata; supplied IDs and audit metadata are ignored. Importing the same CSV twice creates two sets of records, rather than overwriting previous inventory.
 
-Required column names: `itemName`, `workflow`, `status`, `ownerLab`, `freezer`, `shelf`, `box`. For a full-fidelity import, use the downloadable template. Other omitted fields receive new-item defaults. Dates use `YYYY-MM-DD`. Use one of the exact status/item-type values listed in `src/model.ts`. Custom workflow names are accepted.
+Required column names: `itemName`, `workflow`, `status`, `ownerLab`, `freezer`. For a full-fidelity import, use the downloadable template. Other omitted fields receive new-item defaults. Dates use `YYYY-MM-DD`. Use one of the exact status/item-type values listed in `src/model.ts`. Custom workflow names are accepted.
 
 - Upload size: 2 MB; batch size: 5,000 records.
 - The preview shows the first 20 valid rows and validation errors. No records are saved until Import is pressed, and errors block the entire import.
